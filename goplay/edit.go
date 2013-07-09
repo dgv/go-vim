@@ -63,6 +63,6 @@ const hello = `package main
 import "fmt"
 
 func main() {
-	fmt.Println("Hello, Go-VIm")
+	fmt.Println("Hello, go-vim")
 }
 `
