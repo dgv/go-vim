@@ -48,6 +48,7 @@
 				'shareURLEl': '#shareURL',
 				'enableHistory': true
 			});
+			CodeMirror.Vim.defineEx('run', 'run', function(cm, params){ $('#run').click();});
 
 			var about = $('#about');
 			var wrap = $('#wrap');
