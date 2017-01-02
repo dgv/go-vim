@@ -32,7 +32,6 @@ func passThru(w io.Writer, req *http.Request) error {
 	defer req.Body.Close()
 	req.Header.Set("User-Agent", "go-vim")
 	r, err := client.Post(runUrl, req.Header.Get("Content-type"), req.Body)
-	c.Infof("%q",r)
 	if err != nil {
 		c.Errorf("making POST request:", err)
 		return err

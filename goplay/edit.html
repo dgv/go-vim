@@ -7,23 +7,14 @@
 		<script src="/static/playground.js"></script>
 
 		<link rel="stylesheet" href="/static/codemirror/lib/codemirror.css">
-		<script src="/static/codemirror/lib/codemirror.js"></script>
+		<script src="/static/codemirror/lib/codemirror.min.js"></script>
 		<script src="/static/codemirror/mode/go/go.js"></script>
 		<link rel="stylesheet" href="/static/codemirror/theme/monokai.css">
 		<script src="/static/codemirror/addon/dialog/dialog.js"></script>
 		<script src="/static/codemirror/addon/search/searchcursor.js"></script>
 		<script src="/static/codemirror/addon/edit/matchbrackets.js"></script>
-		<script src="/static/codemirror/keymap/vim.js"></script>
+		<script src="/static/codemirror/keymap/vim.min.js"></script>
 		<link rel="stylesheet" href="/static/codemirror/addon/dialog/dialog.css">
-		<script>
-  		  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  		  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  		  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  		  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-  		  ga('create', 'UA-41883924-1', 'go-vim.appspot.com');
-  		  ga('send', 'pageview');
-		</script>
 		<script>
 		$(document).ready(function() {
     			code = CodeMirror.fromTextArea(document.getElementById('code'), {
@@ -44,19 +35,28 @@
 				'outputEl':   '#output',
 				'runEl':      '#run',
 				'fmtEl':      '#fmt',
+				'fmtImportEl':  '#imports',
 				'shareEl':    '#share',
 				'shareURLEl': '#shareURL',
 				'enableHistory': true
 			});
+			// Preserve "Imports" checkbox value between sessions.
+			if (readCookie('playgroundImports') == 'true')
+				$('#imports').attr('checked','checked');
+			$('#imports').change(function() {
+				createCookie('playgroundImports', $(this).is(':checked') ? 'true' : '');
+			});
 			CodeMirror.Vim.defineEx('run', 'run', function(cm, params){ $('#run').click();});
 			CodeMirror.Vim.defineEx('fmt', 'fmt', function(cm, params){ $('#fmt').click();});
+			
+			$('#code').attr('wrap', 'off');
 			var about = $('#about');
 			var wrap = $('#wrap');
-			about.click(function(e) {				
+			about.click(function(e) {
 				if ($(e.target).is('a')) {
 					return;
 				}
-				about.hide();				
+				about.hide();
 				wrap.show();
 			});
 			$('#aboutButton').click(function() {
@@ -68,8 +68,49 @@
 				wrap.hide();
 				about.show();
 			})
+			
+			if (readCookie('playgroundImports') == 'true')
+				$('#imports').attr('checked','checked');
+			$('#imports').change(function() {
+				createCookie('playgroundImports', $(this).is(':checked') ? 'true' : '');
+			});
+			
+			if (window.trackEvent) {
+				$('#run').click(function() {
+					window.trackEvent('playground', 'click', 'run-button');
+				});
+				$('#share').click(function() {
+					window.trackEvent('playground', 'click', 'share-button');
+				});
+			}
 		});
+
+		function createCookie(name, value) {
+			document.cookie = name+"="+value+"; path=/";
+		}
+
+		function readCookie(name) {
+			var nameEQ = name + "=";
+			var ca = document.cookie.split(';');
+			for(var i=0;i < ca.length;i++) {
+				var c = ca[i];
+				while (c.charAt(0)==' ') c = c.substring(1,c.length);
+				if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+			}
+			return null;
+		}
 		</script>
+<script type="text/javascript">
+var _gaq = _gaq || [];
+_gaq.push(["_setAccount", "UA-41883924-1"]);
+window.trackPageview = function() {
+  _gaq.push(["_trackPageview", location.pathname+location.hash]);
+};
+window.trackPageview();
+window.trackEvent = function(category, action, opt_label, opt_value, opt_noninteraction) {
+  _gaq.push(["_trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+};
+</script>
 	</head>
 	<body itemscope itemtype="http://schema.org/CreativeWork">
 		<div id="banner">
@@ -77,6 +118,12 @@
 			<div id="controls">
 				<input type="button" value="Run" id="run">
 				<input type="button" value="Format" id="fmt">
+				<div id="importsBox">
+					<label title="Rewrite imports on Format">
+						<input type="checkbox" id="imports">
+						Imports
+					</label>
+				</div>
 				<input type="button" value="Share" id="share">
 				<input type="text" id="shareURL">
 			</div>
@@ -88,19 +135,18 @@
 			<textarea  id="code" name="code" spellcheck="false">{{printf "%s" .Snippet.Body |html}}</textarea>
 		</div>
 		<div id="output"></div>
-		<img itemprop="image" src="http://golang.org/doc/gopher/project.png" style="display:none">
 		<div id="about">
 <p><b>About go-vim</b></p>
 
 <p>
 The go-vim is a mod of <a href="http://play.golang.org/">Go Playground</a>, with <a href="http://codemirror.net">CodeMirror</a> editor/<a href="http://www.vim.org">vim</a>-keybindings. 
-You can fork the project on: <a href="http://github.com/danielvargas/go-vim">http://github.com/danielvargas/go-vim</a></p>
+You can fork the project on: <a href="http://github.com/dgv/go-vim">http://github.com/dgv/go-vim</a></p>
 
 <p><b>About the Playground</b></p>
 
 <p>
 The Go Playground is a web service that runs on
-<a href="http://golang.org/">golang.org</a>'s servers.
+<a href="//golang.org/">golang.org</a>'s servers.
 The service receives a Go program, compiles, links, and
 runs the program inside a sandbox, then returns the output.
 </p>
@@ -112,30 +158,48 @@ There are limitations to the programs that can be run in the playground:
 <ul>
 
 <li>
-The playground can use most of the standard library, with some
-exceptions; notably absent are network and file system access.
-Therefore, the only communication a playground program has to the
-outside world is by writing to standard output and standard error.
+The playground can use most of the standard library, with some exceptions.
+The only communication a playground program has to the outside world
+is by writing to standard output and standard error.
 </li>
 
 <li>
 In the playground the time begins at 2009-11-10 23:00:00 UTC
-(determining the sigificance of this date is an exercise for the reader).
+(determining the significance of this date is an exercise for the reader).
 This makes it easier to cache programs by giving them deterministic output.
 </li>
 
 <li>
-There are also limits on execution time and on CPU and memory usage,
-and the program is restricted to running in a single thread
-(but may use many goroutines).
+There are also limits on execution time and on CPU and memory usage.
 </li>
 
 </ul>
 
 <p>
+The article "<a href="//blog.golang.org/playground" target="_blank">Inside
+the Go Playground</a>" describes how the playground is implemented.
+</p>
+
+<p>
 The playground uses the latest stable release of Go.<br>
 To find the precise version, run <a href="/p/gmQiwXz55A">this program</a>.
 </p>
+
+<p>
+The playground service is used by more than just the official Go project
+(<a href="//gobyexample.com/">Go by Example</a> is one other instance)
+and we are happy for you to use it on your own site.
+All we ask is that you <a href="mailto:golang-dev@googlegroups.com">contact us first</a>,
+use a unique user agent in your requests (so we can identify you),
+and that your service is of benefit to the Go community.
+</p>
 		</div>
+<script type="text/javascript">
+(function() {
+  var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;
+  ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+  var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
+})();
+</script>
 	</body>
 </html>

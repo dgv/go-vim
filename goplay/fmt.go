@@ -5,13 +5,11 @@
 package goplay
 
 import (
-	"bytes"
 	"encoding/json"
-	"go/ast"
-	"go/parser"
-	"go/printer"
-	"go/token"
+	"go/format"
 	"net/http"
+
+	"golang.org/x/tools/imports"
 )
 
 func init() {
@@ -24,28 +22,21 @@ type fmtResponse struct {
 }
 
 func fmtHandler(w http.ResponseWriter, r *http.Request) {
-	resp := new(fmtResponse)
-	body, err := gofmt(r.FormValue("body"))
+	var (
+		in  = []byte(r.FormValue("body"))
+		out []byte
+		err error
+	)
+	if r.FormValue("imports") != "" {
+		out, err = imports.Process("prog.go", in, nil)
+	} else {
+		out, err = format.Source(in)
+	}
+	var resp fmtResponse
 	if err != nil {
 		resp.Error = err.Error()
 	} else {
-		resp.Body = body
+		resp.Body = string(out)
 	}
 	json.NewEncoder(w).Encode(resp)
-}
-
-func gofmt(body string) (string, error) {
-	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "prog.go", body, parser.ParseComments)
-	if err != nil {
-		return "", err
-	}
-	ast.SortImports(fset, f)
-	var buf bytes.Buffer
-	config := &printer.Config{Mode: printer.UseSpaces | printer.TabIndent, Tabwidth: 8}
-	err = config.Fprint(&buf, fset, f)
-	if err != nil {
-		return "", err
-	}
-	return buf.String(), nil
 }
