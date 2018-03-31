@@ -20,7 +20,7 @@ func init() {
 	http.HandleFunc("/", edit)
 }
 
-var editTemplate = template.Must(template.ParseFiles("goplay/edit.html"))
+var editTemplate = template.Must(template.ParseFiles("edit.html"))
 
 type editData struct {
 	Snippet *Snippet
