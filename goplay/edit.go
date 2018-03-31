@@ -5,11 +5,13 @@
 package goplay
 
 import (
-	"appengine"
-	"appengine/datastore"
 	"net/http"
 	"strings"
 	"text/template"
+
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
 )
 
 const hostname = "play.golang.org"
@@ -44,7 +46,7 @@ func edit(w http.ResponseWriter, r *http.Request) {
 		err := datastore.Get(c, key, snip)
 		if err != nil {
 			if err != datastore.ErrNoSuchEntity {
-				c.Errorf("loading Snippet: %v", err)
+				log.Errorf(c, "loading Snippet: %v", err)
 			}
 			http.Error(w, "Snippet not found", http.StatusNotFound)
 			return

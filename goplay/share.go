@@ -5,14 +5,16 @@
 package goplay
 
 import (
-	"appengine"
-	"appengine/datastore"
 	"bytes"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
 	"io"
 	"net/http"
+
+	"google.golang.org/appengine"
+	"google.golang.org/appengine/datastore"
+	"google.golang.org/appengine/log"
 )
 
 const salt = "[replace this with something unique]"
@@ -45,7 +47,7 @@ func share(w http.ResponseWriter, r *http.Request) {
 	var body bytes.Buffer
 	_, err := body.ReadFrom(r.Body)
 	if err != nil {
-		c.Errorf("reading Body: %v", err)
+		log.Errorf(c, "reading Body: %v", err)
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -56,7 +58,7 @@ func share(w http.ResponseWriter, r *http.Request) {
 	key := datastore.NewKey(c, "Snippet", id, 0, nil)
 	_, err = datastore.Put(c, key, snip)
 	if err != nil {
-		c.Errorf("putting Snippet: %v", err)
+		log.Errorf(c, "putting Snippet: %v", err)
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
