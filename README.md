@@ -1,5 +1,6 @@
 [go-vim](http://go-vim.appspot.com)
 ==================================
+![travis](https://travis-ci.org/dgv/go-vim.svg?branch=master)
 
 Go-PlayGround + VIm(CodeMirror keymap)
 --------------------------------------
