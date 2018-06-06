@@ -2,7 +2,6 @@ sudo: false
 language: go
 go:
 - 1.10.x
-- 1.x
 git:
   depth: 1
 notifications:
