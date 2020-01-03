@@ -34,12 +34,12 @@ func passThru(w io.Writer, req *http.Request) error {
 	req.Header.Set("User-Agent", "go-vim")
 	r, err := client.Post(runUrl, req.Header.Get("Content-type"), req.Body)
 	if err != nil {
-		log.Errorf(c, "making POST request:", err)
+		log.Errorf(c, "making POST request: %v", err)
 		return err
 	}
 	defer r.Body.Close()
 	if _, err := io.Copy(w, r.Body); err != nil {
-		log.Errorf(c, "copying response Body:", err)
+		log.Errorf(c, "copying response Body: %v", err)
 		return err
 	}
 	return nil
