@@ -7,6 +7,6 @@ handlers:
 - url: /static
   static_dir: static
 - url: /(|compile|fmt|share)
-  script: _go_app
+  script: auto
 - url: /p/.+
-  script: _go_app
+  script: auto
