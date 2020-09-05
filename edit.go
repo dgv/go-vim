@@ -8,10 +8,9 @@ import (
 	"net/http"
 	"strings"
 	"text/template"
-
+	"log"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/log"
 )
 
 const hostname = "play.golang.org"
@@ -46,7 +45,7 @@ func edit(w http.ResponseWriter, r *http.Request) {
 		err := datastore.Get(c, key, snip)
 		if err != nil {
 			if err != datastore.ErrNoSuchEntity {
-				log.Errorf(c, "loading Snippet: %v", err)
+				log.Fatalf("loading Snippet: %v", err)
 			}
 			http.Error(w, "Snippet not found", http.StatusNotFound)
 			return

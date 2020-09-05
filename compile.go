@@ -8,10 +8,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/log"
-	"google.golang.org/appengine/urlfetch"
+	"log"
+	
 )
 
 const runUrl = "http://golang.org/compile?output=json"
@@ -28,18 +26,16 @@ func compile(w http.ResponseWriter, r *http.Request) {
 }
 
 func passThru(w io.Writer, req *http.Request) error {
-	c := appengine.NewContext(req)
-	client := urlfetch.Client(c)
 	defer req.Body.Close()
 	req.Header.Set("User-Agent", "go-vim")
-	r, err := client.Post(runUrl, req.Header.Get("Content-type"), req.Body)
+	r, err := http.Post(runUrl, req.Header.Get("Content-type"), req.Body)
 	if err != nil {
-		log.Errorf(c, "making POST request: %v", err)
+		log.Fatalf("making POST request: %v", err)
 		return err
 	}
 	defer r.Body.Close()
 	if _, err := io.Copy(w, r.Body); err != nil {
-		log.Errorf(c, "copying response Body: %v", err)
+		log.Fatalf("copying response Body: %v", err)
 		return err
 	}
 	return nil
