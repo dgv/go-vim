@@ -5,12 +5,13 @@
 package main
 
 import (
+	"context"
+	"log"
 	"net/http"
 	"strings"
 	"text/template"
-	"log"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
+
+	"cloud.google.com/go/datastore"
 )
 
 const hostname = "play.golang.org"
@@ -34,15 +35,15 @@ func edit(w http.ResponseWriter, r *http.Request) {
 
 	snip := &Snippet{Body: []byte(hello)}
 	if strings.HasPrefix(r.URL.Path, "/p/") {
-		c := appengine.NewContext(r)
+		ctx := context.Background()
 		id := r.URL.Path[3:]
 		serveText := false
 		if strings.HasSuffix(id, ".go") {
 			id = id[:len(id)-3]
 			serveText = true
 		}
-		key := datastore.NewKey(c, "Snippet", id, 0, nil)
-		err := datastore.Get(c, key, snip)
+		key := datastore.NameKey("Snippet", id, nil)
+		err := datastoreClient.Get(ctx, key, snip)
 		if err != nil {
 			if err != datastore.ErrNoSuchEntity {
 				log.Fatalf("loading Snippet: %v", err)

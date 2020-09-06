@@ -6,18 +6,20 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/datastore"
-	"google.golang.org/appengine/log"
+	"cloud.google.com/go/datastore"
 )
 
 const salt = "[replace this with something unique]"
+
+var datastoreClient *datastore.Client
 
 type Snippet struct {
 	Body []byte
@@ -34,6 +36,8 @@ func (s *Snippet) Id() string {
 }
 
 func init() {
+	ctx := context.Background()
+	datastoreClient, _ = datastore.NewClient(ctx, "go-vim")
 	http.HandleFunc("/share", share)
 }
 
@@ -42,23 +46,22 @@ func share(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
-	c := appengine.NewContext(r)
+	ctx := context.Background()
 
 	var body bytes.Buffer
 	_, err := body.ReadFrom(r.Body)
 	if err != nil {
-		log.Errorf(c, "reading Body: %v", err)
+		log.Fatalf("reading Body: %v", err)
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
 	r.Body.Close()
-
 	snip := &Snippet{Body: body.Bytes()}
 	id := snip.Id()
-	key := datastore.NewKey(c, "Snippet", id, 0, nil)
-	_, err = datastore.Put(c, key, snip)
+	key := datastore.NameKey("Snippet", id, nil)
+	_, err = datastoreClient.Put(ctx, key, snip)
 	if err != nil {
-		log.Errorf(c, "putting Snippet: %v", err)
+		log.Fatalf("putting Snippet: %v", err)
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}

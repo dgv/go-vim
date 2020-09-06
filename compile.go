@@ -7,9 +7,8 @@ package main
 import (
 	"fmt"
 	"io"
-	"net/http"
 	"log"
-	
+	"net/http"
 )
 
 const runUrl = "http://golang.org/compile?output=json"
