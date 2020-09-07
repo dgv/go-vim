@@ -11,15 +11,13 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"cloud.google.com/go/datastore"
+	"google.golang.org/appengine/log"
 )
 
 const salt = "[replace this with something unique]"
-
-var datastoreClient *datastore.Client
 
 type Snippet struct {
 	Body []byte
@@ -36,8 +34,6 @@ func (s *Snippet) Id() string {
 }
 
 func init() {
-	ctx := context.Background()
-	datastoreClient, _ = datastore.NewClient(ctx, "go-vim")
 	http.HandleFunc("/share", share)
 }
 
@@ -51,7 +47,7 @@ func share(w http.ResponseWriter, r *http.Request) {
 	var body bytes.Buffer
 	_, err := body.ReadFrom(r.Body)
 	if err != nil {
-		log.Fatalf("reading Body: %v", err)
+		log.Errorf(ctx, "reading Body: %v", err)
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -61,7 +57,7 @@ func share(w http.ResponseWriter, r *http.Request) {
 	key := datastore.NameKey("Snippet", id, nil)
 	_, err = datastoreClient.Put(ctx, key, snip)
 	if err != nil {
-		log.Fatalf("putting Snippet: %v", err)
+		log.Errorf(ctx, "putting Snippet: %v", err)
 		http.Error(w, "Server Error", http.StatusInternalServerError)
 		return
 	}
