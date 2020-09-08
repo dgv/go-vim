@@ -8,5 +8,6 @@ handlers:
   static_dir: static
 - url: /(|compile|fmt|share)
   script: auto
+  secure: always
 - url: /p/.+
   script: auto
