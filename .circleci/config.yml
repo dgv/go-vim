@@ -1,42 +1,29 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build:
-    working_directory: ~/repo
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
+  build_test:
     docker:
-      - image: circleci/golang:1.16.2 
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+      - image: cimg/go:1.18.0
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - go-mod-v4-{{ checksum "go.sum" }}
-      - run:
-          name: Install Dependencies
-          command: go mod download
-      - save_cache:
-          key: go-mod-v4-{{ checksum "go.sum" }}
-          paths:
-            - "/go/pkg/mod"
-      - run:
-          name: Run tests
-          command: |
-            mkdir -p /tmp/test-reports
-            gotestsum --junitfile /tmp/test-reports/unit-tests.xml
-      - store_test_results:
-          path: /tmp/test-reports
+      - run: go version
+      - run: go mod download
+      - run: go test -v
+      
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - checkout
+      - run: |
+          echo $GCLOUD_SERVICE_KEY | base64 --decode | gcloud auth activate-service-account --key-file=-
+          gcloud --quiet config set project ${GOOGLE_PROJECT_ID}
+	  gcloud app deploy app.yaml
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  sample: # This is the name of the workflow, feel free to change it to better match your workflow.
-    # Inside the workflow, you define the jobs you want to run.
+  build_test_deploy:
     jobs:
-      - build
+      - build_test
+      - deploy:
+      	  requires:
+      	    - build_test 
