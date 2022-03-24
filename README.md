@@ -1,6 +1,6 @@
 [go-vim](http://go-vim.appspot.com)
 ==================================
-[![Build Status](https://travis-ci.org/dgv/go-vim.svg?branch=master)](https://travis-ci.org/dgv/go-vim)
+[![CircleCI](https://circleci.com/gh/dgv/go-vim/tree/master.svg?style=svg)](https://circleci.com/gh/dgv/go-vim/tree/master)
 
 Go-PlayGround + VIm(CodeMirror keymap)
 --------------------------------------
